@@ -1,0 +1,305 @@
+%!TEX encoding=UTF-8 Unicode
+\documentclass[xcolor={usenames,dvipsnames}]{beamer}
+
+%=========================Language and encoding ==============================
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+% Fix size errors due to T1 in bbl file
+\usepackage{fix-cm}
+%=============================================================================
+
+%========================= Todo notes  =======================================
+
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline}{}
+
+%=============================================================================
+
+%========================= Figures ===========================================
+
+\usepackage{graphicx} % support the \includegraphics command and options
+\graphicspath{ {./img/} }
+%\usepackage{tikz}
+\usepackage{epstopdf}
+%\usepackage{subcaption}
+
+%=============================================================================
+
+%=============================================================================
+
+%========================= Hyperref ==========================================
+
+\usepackage{hyperref}
+\hypersetup{
+    hyperindex=true, %ajoute des liens dans les index.
+    colorlinks=false, %colorise les liens
+    breaklinks=true, %permet le retour à la ligne dans les liens trop longs
+    urlcolor= blue, %couleur des hyperliens
+    linkcolor= black, %couleur des liens internes
+bookmarksopen=true,}
+
+%=============================================================================
+
+%========================= Other useful includes =============================
+
+\usepackage{ifthen}
+\usepackage[absolute,overlay]{textpos} %to set some blocks position
+%=============================================================================
+
+%========================= Beamer theme =====================================
+
+%Stuff for printable version
+\mode<handout>{
+    \usetheme{default}
+    \setbeamercolor{background canvas}{bg=black!5}
+    \pgfpagesuselayout{4 on 1}[a4paper,landscape,border shrink=2.5mm]
+}
+
+\usetheme{AntibesCompact}
+%=============================================================================
+
+%========================= Title frame  ======================================
+\title[]{Analyzing an application memory behavior}
+\author[David Beniamine]{David Beniamine \and Guillaume Huard \and Bruno
+Raffin}
+\institute[MOAIS]{
+    \includegraphics[width=.32\textwidth]{img/logoUJF.jpg}
+    \qquad
+    \qquad
+    \includegraphics[width=.15\textwidth]{img/LIG_coul.jpg}
+    \\
+    \includegraphics[width=.22\textwidth]{img/inria.jpg}
+    \includegraphics[width=.4\textwidth]{img/moais.png}
+}
+%=============================================================================
+
+\begin{document}
+%========================= Title and outlines ================================
+\begin{frame}{}
+    \titlepage
+\end{frame}
+
+\newboolean{sectiontoc}
+\setboolean{sectiontoc}{true} % default to true
+
+\AtBeginSection[]
+{
+    \ifthenelse{\boolean{sectiontoc}}{
+        \begin{frame}<beamer>
+            \frametitle{Outline}
+            \tableofcontents[currentsection,currentsubsection]
+        \end{frame}
+    }
+}
+\AtBeginSubsection[]
+{
+    \ifthenelse{\boolean{sectiontoc}}{
+        \begin{frame}<beamer>
+            \frametitle{Outline}
+            \tableofcontents[currentsection,currentsubsection]
+        \end{frame}
+    }
+}
+
+%=============================================================================
+
+%========================= Real presentation =================================
+\begin{frame}{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Context and motivations}
+\begin{frame}{Memory matters}
+    \begin{itemize}[<+->]
+        \item Gap processor / memory
+        \item NUMA machines
+        \item Accelerators GPGPU / Xeon Phi \dots
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Existing tools}
+    \begin{block}{Analysis}
+        Vtunes\cite{Reinders05VTune} HPCTOOLKIT \cite{Adhianto10HPCTOOLKIT}
+        \dots => CPU oriented
+    \end{block}
+    \pause
+    \begin{alertblock}{Memory oriented tools}
+        \begin{itemize}[<+->]
+            \item Manual mappings => requires knowledge
+            \item NUMA: adaptive\cite{Diener13CommunicationBased,Levinthal2009} => Collect infos don't give it to user
+            \item Memory profiling \cite{Lachaize12MemProf,Gimenez14Dissecting}
+                \begin{itemize}
+                    \item Based on CPU counters => unclear info
+                    \item Sampling (MemProf etc.) not complete / focus on
+                        remote accesses etc.
+                \end{itemize}
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+\section{Memory Analysis}
+\subsection{Tabarnac}
+\subsubsection{Design}
+\begin{frame}{Goal}
+    \begin{itemize}
+        \item NUMA oriented
+        \item Memory access balance (between thread / pages)
+        \item Sharing pattern
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Main principles}
+    \begin{itemize}[<+->]
+        \item Pin instrumentation
+            \begin{itemize}
+                \item Counters Pages / thread
+            \end{itemize}
+        \item Data oriented visualization
+        \item Simple yet meaning full plots
+            \begin{itemize}
+                \item Structure size and usage
+                \item Accesses distribution by on each structure
+                \item First touch distribution by on each structure
+            \end{itemize}
+        \item Easy to use interface with explanations for new users
+    \end{itemize}
+\end{frame}
+
+\subsubsection{Overhead}
+\begin{frame}{Overhead}
+    \missingfigure{Tabarnac overhead}
+\end{frame}
+\subsubsection{Results}
+
+\begin{frame}{Ondes3D}
+    \alt<1>{
+        \missingfigure{Ondes3D orig}
+    }{
+        \missingfigure{Ondes3D modif}
+    }
+    \pause
+\end{frame}
+
+\begin{frame}{Ondes3D Results}
+    \missingfigure{Ondes3D results}
+\end{frame}
+
+\begin{frame}{IS}
+    \alt<1>{
+        \missingfigure{IS origin}
+    }{
+        \missingfigure{IS modification}
+    }
+    \pause
+\end{frame}
+
+\begin{frame}{IS Results}
+    \missingfigure{IS results}
+\end{frame}
+
+
+\subsection{Moca}
+
+\subsubsection{Design}
+
+\begin{frame}{Goal}
+    \begin{itemize}[<+->]
+        \item Accesses distribution
+        \item Thread Sharing
+        \item CPU Location
+        \item Temporal evolution
+        \item Superset of the pages
+        \item Detail at the byte granularity
+        \item Reasonable overhead
+        \item Portability
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Main principles}
+    \begin{itemize}
+        \item Page fault interception
+        \item False page fault
+        \item Linux kernel module
+        \item Temporary flush data to disc
+    \end{itemize}
+\end{frame}
+
+\subsubsection{Overhead}
+
+\begin{frame}{Overhead on NPB}
+    \missingfigure{Overhead NPB}
+\end{frame}
+
+\subsubsection{Visualization}
+
+\begin{frame}{Design}
+    \begin{itemize}
+        \item Based on Ocelotl\cite{Dosimont14Trace}
+        \item Aggregate data
+        \item By thread visualization
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Example}
+    \missingfigure{Ocelotl IS ?}
+\end{frame}
+
+\section{Conclusions and perspectives}
+\begin{frame}{Conclusion}
+    \begin{exampleblock}{Using efficiently memory is hard}
+        How can we understand an applications memory behavior ?
+    \end{exampleblock}
+    \pause
+    \begin{block}{Tabarnac}
+       \begin{itemize}
+           \item Global view
+           \item NUMA oriented
+           \item Simple to use
+           \item No temporal informations
+       \end{itemize}
+    \end{block}
+    \pause
+    \begin{alertblock}{Moca}
+        \begin{itemize}
+            \item Extremely complete trace
+            \item Reasonable overhead
+            \item Temporal informations
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\newcounter{finalframe}
+\setcounter{finalframe}{\value{framenumber}}
+%Last numbered frame go here
+
+\begin{frame}{Future work}
+    \begin{block}{Study case and Optimization}
+        We are looking for applications / kernel to study and optimize.
+    \end{block}
+    \pause
+    \begin{alertblock}{Visualization}
+       Moca visualization is a prototype, make it more scalable.
+    \end{alertblock}
+\end{frame}
+%=============================================================================
+
+%=============================================================================
+%Uncomment next lines for uncounted backup slides & biblio
+\section*{Bibliography}
+\setboolean{sectiontoc}{false}
+%
+\bibliographystyle{apalike}
+\bibliography{biblio}
+
+%========================= Backup slides =====================================
+%\newsection*{Hidden slides}
+%put this line before each frame
+%\setcounter{framenumber}{\value{finalframe}}
+
+%=============================================================================
+\end{document}
+
+
+
+
