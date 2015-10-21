@@ -119,28 +119,40 @@ Raffin}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Existing tools}
-    \begin{block}{Analysis}
-        Vtunes\cite{Reinders05VTune} HPCTOOLKIT \cite{Adhianto10HPCTOOLKIT}
-        \dots => CPU oriented
-    \end{block}
+\begin{frame}{Generic tools}
+    \begin{itemize}
+        \item Vtunes~\cite{Reinders05VTune}
+        \item HPCTOOLKIT~\cite{Adhianto10HPCTOOLKIT}
+        \item \ldots
+    \end{itemize}
     \pause
-    \begin{alertblock}{Memory oriented tools}
-        \begin{itemize}[<+->]
-            \item Manual mappings => requires knowledge
-            \item NUMA: adaptive\cite{Diener13CommunicationBased,Levinthal2009} => Collect infos don't give it to user
-            \item Memory profiling \cite{Lachaize12MemProf,Gimenez14Dissecting}
-                \begin{itemize}
-                    \item Based on CPU counters => unclear info
-                    \item Sampling (MemProf etc.) not complete / focus on
-                        remote accesses etc.
-                \end{itemize}
-        \end{itemize}
+    \begin{alertblock}{Limit}
+        Focus on CPU
     \end{alertblock}
+\end{frame}
+\begin{frame}{Memory oriented tools}
+    \begin{itemize}[<+->]
+        \item Data and Thread Mapping
+            \begin{itemize}
+                \item Manual require knowledge
+                \item  Adaptive~\cite{Diener13CommunicationBased,Levinthal2009}
+                    \begin{itemize}
+                        \item Collect and use data online
+                        \item \alert{Cannot change memory pattern}
+                    \end{itemize}
+            \end{itemize}
+        \item Memory profiling~\cite{Lachaize12MemProf,Gimenez14Dissecting}
+            \begin{itemize}
+                \item Based on CPU counters => unclear info
+                \item Sampling (IBS/PEBS etc.) \alert{not complete}
+                \item \alert{Focus on particular events} (remote accesses,
+                    cache miss etc.)
+            \end{itemize}
+    \end{itemize}
 \end{frame}
 \section{Memory Analysis}
 \subsection{Tabarnac}
-\subsubsection{Design}
+\subsubsection*{Design}
 \begin{frame}{Goal}
     \begin{itemize}
         \item NUMA oriented
@@ -166,42 +178,103 @@ Raffin}
     \end{itemize}
 \end{frame}
 
-\subsubsection{Overhead}
+\subsubsection*{Overhead}
 \begin{frame}{Overhead}
-    \missingfigure{Tabarnac overhead}
+    \begin{figure}
+        \centering
+        \includegraphics[width=.8\linewidth]{tabarnac_ovh.pdf}
+        \caption{Overhead of Tabarnac on the NPB on a 64 cores NUMA machine}
+    \end{figure}
 \end{frame}
-\subsubsection{Results}
+\subsubsection*{Example}
 
-\begin{frame}{Ondes3D}
+\begin{frame}{IS accesses distribution}
+    \begin{figure}
+        \centering
+        \vspace{-10pt}
+        \alt<1>{
+            \includegraphics[width=.6\linewidth]{is_b_kba_orig.png}
+            \caption{Access distribution on structure key array}
+        }{\alt<2>{
+            \includegraphics[width=.6\linewidth]{is_b_kb2_orig.png}
+            \caption{Access distribution on structure key buff 2}
+        }{
+            \includegraphics[width=.6\linewidth]{is_b_kb1_orig.png}
+            \caption{Access distribution on structure key buff 1}
+        }
+    }
+\end{figure}
+\pause
+\pause
+\end{frame}
+
+\begin{frame}{What to do now ?}
+    \begin{block}{What is happening}
+        \begin{itemize}
+            \item Access to \texttt{kb1} using values from \texttt{kb2}
+            \item Values of \texttt{kb2} follows a Gaussian distribution
+            \item Dynamic (OpenMp) thread scheduling
+        \end{itemize}
+    \end{block}
+    \pause
+    \begin{alertblock}{How to fix this pattern}
+        \begin{itemize}
+            \item Split the Gaussian
+            \item Cyclic distribution on each side
+            \item Give each thread the same amount of memory accesses
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{New accesses distribution}
+    \begin{figure}
+        \centering
+        \vspace{-10pt}
+        \alt<1>{
+            \includegraphics[width=.6\linewidth]{is_b_kba_modif.png}
+            \caption{Modified access distribution on structure key array}
+        }{\alt<2>{
+            \includegraphics[width=.6\linewidth]{is_b_kb2_modif.png}
+            \caption{Modified access distribution on structure key buff 2}
+        }{
+            \includegraphics[width=.6\linewidth]{is_b_kb1_modif.png}
+            \caption{Modified access distribution on structure key buff 1}
+        }
+    }
+\end{figure}
+\pause
+\pause
+\end{frame}
+
+\begin{frame}{Results}
     \alt<1>{
-        \missingfigure{Ondes3D orig}
+        \begin{itemize}
+            \item Optimization methods
+                \begin{itemize}
+                    \item Base (OS)
+                    \item Numa Balancing (adaptive mapping)
+                    \item Interleave (static mapping)
+                \end{itemize}
+            \item Thread distributions
+                \begin{itemize}
+                    \item Dynamic (default)
+                    \item Cyclic (don't split the loop, unbalanced access)
+                    \item Cyclic-split (described earlier + manual mapping)
+                \end{itemize}
+        \end{itemize}
     }{
-        \missingfigure{Ondes3D modif}
+        \begin{figure}[]
+            \centering
+            \includegraphics[width=.7\linewidth]{is_exectime.pdf}
+            \caption{Evaluation of the modified code}
+        \end{figure}
     }
     \pause
 \end{frame}
-
-\begin{frame}{Ondes3D Results}
-    \missingfigure{Ondes3D results}
-\end{frame}
-
-\begin{frame}{IS}
-    \alt<1>{
-        \missingfigure{IS origin}
-    }{
-        \missingfigure{IS modification}
-    }
-    \pause
-\end{frame}
-
-\begin{frame}{IS Results}
-    \missingfigure{IS results}
-\end{frame}
-
 
 \subsection{Moca}
 
-\subsubsection{Design}
+\subsubsection*{Design}
 
 \begin{frame}{Goal}
     \begin{itemize}[<+->]
@@ -225,24 +298,41 @@ Raffin}
     \end{itemize}
 \end{frame}
 
-\subsubsection{Overhead}
+\subsubsection*{Overhead}
 
 \begin{frame}{Overhead on NPB}
-    \missingfigure{Overhead NPB}
+    \begin{figure}[]
+        \centering
+        \includegraphics[width=.7\linewidth]{moca_overhead_nas.pdf}
+        \caption{Overhead of Moca compared to Tabarnac on the NPB, edel
+        cluster}
+    \end{figure}
 \end{frame}
 
-\subsubsection{Visualization}
+\begin{frame}{Unique addresses intercepted}
+    \begin{figure}[]
+        \centering
+        \includegraphics[width=.7\linewidth]{moca_addresses_nas.pdf}
+        \caption{Number of addresses captured on Moca compared to Tabarnac on the NPB, edel
+        cluster}
+    \end{figure}
+\end{frame}
+\subsubsection*{Visualization}
 
 \begin{frame}{Design}
     \begin{itemize}
-        \item Based on Ocelotl\cite{Dosimont14Trace}
+        \item Based on Ocelotl~\cite{Dosimont14Trace}
         \item Aggregate data
         \item By thread visualization
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Example}
-    \missingfigure{Ocelotl IS ?}
+    \begin{figure}[]
+        \centering
+        \includegraphics[width=\linewidth]{ocelotl.png}
+        \caption{Example visualisation of Moca with Ocelotl}
+    \end{figure}
 \end{frame}
 
 \section{Conclusions and perspectives}
@@ -252,12 +342,12 @@ Raffin}
     \end{exampleblock}
     \pause
     \begin{block}{Tabarnac}
-       \begin{itemize}
-           \item Global view
-           \item NUMA oriented
-           \item Simple to use
-           \item No temporal informations
-       \end{itemize}
+        \begin{itemize}
+            \item Global view
+            \item NUMA oriented
+            \item Simple to use
+            \item No temporal informations
+        \end{itemize}
     \end{block}
     \pause
     \begin{alertblock}{Moca}
@@ -279,7 +369,7 @@ Raffin}
     \end{block}
     \pause
     \begin{alertblock}{Visualization}
-       Moca visualization is a prototype, make it more scalable.
+        Moca visualization is a prototype, make it more scalable.
     \end{alertblock}
 \end{frame}
 %=============================================================================
@@ -295,6 +385,11 @@ Raffin}
 %========================= Backup slides =====================================
 %\newsection*{Hidden slides}
 %put this line before each frame
+
+% Tabarnac full vizu
+% Ondes3D
+% Ocelotl Full
+% Machines descriptions
 %\setcounter{framenumber}{\value{finalframe}}
 
 %=============================================================================
