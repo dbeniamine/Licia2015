@@ -23,6 +23,8 @@
 \graphicspath{ {./img/} }
 %\usepackage{tikz}
 \usepackage{epstopdf}
+\usepackage{booktabs}
+\usepackage{multirow}
 %\usepackage{subcaption}
 
 %=============================================================================
@@ -111,12 +113,17 @@ Raffin}
 \end{frame}
 
 \section{Context and motivations}
-\begin{frame}{Memory matters}
+\begin{frame}{Memory on HPC}
     \begin{itemize}[<+->]
-        \item Gap processor / memory
+        \item $100$ of CPU cycles per memory access
+        \item Cache hierarchy
         \item NUMA machines
-        \item Accelerators GPGPU / Xeon Phi \dots
+        \item GPGPU / Xeon Phi \dots
     \end{itemize}
+    \pause
+    \begin{exampleblock}{Question}
+        How to optimize memory usage ?
+    \end{exampleblock}
 \end{frame}
 
 \begin{frame}{Generic tools}
@@ -134,16 +141,17 @@ Raffin}
     \begin{itemize}[<+->]
         \item Data and Thread Mapping
             \begin{itemize}
-                \item Manual require knowledge
+                \item Manual \alert{require knowledge}
                 \item  Adaptive~\cite{Diener13CommunicationBased,Levinthal2009}
                     \begin{itemize}
                         \item Collect and use data online
                         \item \alert{Cannot change memory pattern}
                     \end{itemize}
             \end{itemize}
-        \item Memory profiling~\cite{Lachaize12MemProf,Gimenez14Dissecting}
+        \item Existing memory
+            profilers~\cite{Lachaize12MemProf,Gimenez14Dissecting,Liu14Tool}
             \begin{itemize}
-                \item Based on CPU counters => unclear info
+                \item Based on CPU counters \alert{indirect information}
                 \item Sampling (IBS/PEBS etc.) \alert{not complete}
                 \item \alert{Focus on particular events} (remote accesses,
                     cache miss etc.)
@@ -154,9 +162,14 @@ Raffin}
 \subsection{Tabarnac}
 \subsubsection*{Design}
 \begin{frame}{Goal}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item NUMA oriented
-        \item Memory access balance (between thread / pages)
+        \item Data structure centred
+        \item Memory access balance 
+            \begin{itemize}
+                \item Between threads
+                \item Between pages
+            \end{itemize}
         \item Sharing pattern
     \end{itemize}
 \end{frame}
@@ -170,22 +183,15 @@ Raffin}
         \item Data oriented visualization
         \item Simple yet meaning full plots
             \begin{itemize}
-                \item Structure size and usage
-                \item Accesses distribution by on each structure
-                \item First touch distribution by on each structure
+                \item Structure size
+                \item Number of read/write per structure
+                \item \alert{Accesses distribution by on each structure}
+                \item \alert{First touch distribution by on each structure}
             \end{itemize}
         \item Easy to use interface with explanations for new users
     \end{itemize}
 \end{frame}
 
-\subsubsection*{Overhead}
-\begin{frame}{Overhead}
-    \begin{figure}
-        \centering
-        \includegraphics[width=.8\linewidth]{tabarnac_ovh.pdf}
-        \caption{Overhead of Tabarnac on the NPB on a 64 cores NUMA machine}
-    \end{figure}
-\end{frame}
 \subsubsection*{Example}
 
 \begin{frame}{IS accesses distribution}
@@ -281,18 +287,18 @@ Raffin}
         \item Accesses distribution
         \item Thread Sharing
         \item CPU Location
-        \item Temporal evolution
-        \item Superset of the pages
+        \item \alert{Temporal evolution}
+        \item \alert{Superset of the pages}
         \item Detail at the byte granularity
         \item Reasonable overhead
-        \item Portability
+        \item \alert{Portability}
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Main principles}
-    \begin{itemize}
-        \item Page fault interception
-        \item False page fault
+    \begin{itemize}[<+->]
+        \item \alert{Page fault interception}
+        \item False page fault (inspired by~\cite{Diener12Using})
         \item Linux kernel module
         \item Temporary flush data to disc
     \end{itemize}
@@ -377,21 +383,108 @@ Raffin}
 %=============================================================================
 %Uncomment next lines for uncounted backup slides & biblio
 \section*{Bibliography}
-\setboolean{sectiontoc}{false}
 %
 \bibliographystyle{apalike}
 \bibliography{biblio}
 
 %========================= Backup slides =====================================
-%\newsection*{Hidden slides}
+\section*{Hidden slides}
 %put this line before each frame
 
-% Tabarnac full vizu
-% Ondes3D
-% Ocelotl Full
-% Machines descriptions
-%\setcounter{framenumber}{\value{finalframe}}
+\setcounter{framenumber}{\value{finalframe}}
+\begin{frame}{Moca full visualization}
+    \begin{figure}
+        \centering
+        \alt<1>{
+            \includegraphics[width=.8\linewidth]{moca_init.png}
+            \caption{Moca trace, zoom on intialisation}
+        }{
+            \alt<2>{
+                \includegraphics[width=.8\linewidth]{moca_zoom.png}
+                \caption{Moca trace zoomed}
+            }{
+                \includegraphics[width=.8\linewidth]{moca_thread.png}
+                \caption{By thread visualization of Moca trace}
+            }
+        }
+    \end{figure}
+    \pause
+    \pause
+\end{frame}
 
+\setcounter{framenumber}{\value{finalframe}}
+\begin{frame}{Tabarnac full visualization}
+    \begin{figure}
+        \centering
+        \vspace{-10pt}
+        \alt<1>{
+            \includegraphics[width=.6\linewidth]{tabarnac_sz.png}
+            \caption{Structure sizes}
+        }{
+            \alt<2>{
+                \includegraphics[width=.6\linewidth]{tabarnac_rw.png}
+                \caption{Read and writes by structures}
+            }{
+                \alt<3>{
+                    \includegraphics[width=.58\linewidth]{tabarnac_dist.png}
+                    \caption{Access distribution}
+                }{
+                    \includegraphics[width=.6\linewidth]{tabarnac_ft.png}
+                    \caption{First touch distribution}
+                }
+            }
+        }
+    \end{figure}
+    \pause
+    \pause
+    \pause
+\end{frame}
+
+
+
+\setcounter{framenumber}{\value{finalframe}}
+\begin{frame}{Tabarnac Overhead}
+    \begin{figure}
+        \centering
+        \includegraphics[width=.8\linewidth]{tabarnac_ovh.pdf}
+        \caption{Overhead of Tabarnac on the NPB on a 64 cores NUMA machine}
+    \end{figure}
+\end{frame}
+
+% Tabarnac full vizu
+\setcounter{framenumber}{\value{finalframe}}
+\begin{frame}{Machines}
+    \centering{
+    \resizebox{.7\linewidth}{!}
+    {
+    \begin{tabular}{lp{1.1cm}rrp{1.35cm}p{1.1cm}}
+        \toprule
+        \multirow{3}{.8cm}{CPU}
+        &  & \multicolumn{2}{c}{Vendor} & \multicolumn{2}{c}{Model} \\
+        \cmidrule(lr){3-6}
+        & \texttt{Turing}  & \multicolumn{2}{c}{Intel} & \multicolumn{2}{c}{Xeon X7550} \\
+        & \texttt{Idfreeze} & \multicolumn{2}{c}{AMD} & \multicolumn{2}{c}{Opteron 6174} \\
+        & \texttt{Edel} & \multicolumn{2}{c}{Intel} & \multicolumn{2}{c}{Xeon E5520} \\
+        \midrule
+        \midrule
+        \multirow{3}{.8cm}{System totals}
+        & & Nodes & Threads & Freq & Memory \\
+        \cmidrule(lr){3-6}
+        & \texttt{Turing}   & $4$ & $64$ & $2.00$ Ghz & $128$ Gib \\
+        & \texttt{Idfreeze} & $8$ & $48$ & $2.20$ Ghz & $256$ Gib\\
+        & \texttt{Edel} & $2$ & $4$ &  $2.27$ Ghz & $24$ Gib\\
+        \midrule
+        \midrule
+        \multirow{3}{.8cm}{Per node}
+        & & Cores & Threads & L3 Cache & Memory \\
+        \cmidrule(lr){3-6}
+        & \texttt{Turing}   & $8$ & $16$ & $18$ Mib & $32$ Gib \\
+        & \texttt{Idfreeze} & $6$ & $6$  & $12$ Mib & $32$ Gib \\
+        & \texttt{Edel} & $4$ & $4$  & $8$ Mib & $12$ Gib \\
+        \bottomrule
+    \end{tabular}
+    }}
+\end{frame}
 %=============================================================================
 \end{document}
 
