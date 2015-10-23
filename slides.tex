@@ -60,19 +60,24 @@ bookmarksopen=true,}
 }
 
 \usetheme{AntibesCompact}
+
+\newcommand{\alertitem}{\item<+-|alert@+->}
+
 %=============================================================================
 
 %========================= Title frame  ======================================
 \title[]{Analyzing an application memory behavior}
-\author[David Beniamine]{David Beniamine \and Guillaume Huard \and Bruno
+\author[David Beniamine]{\underline{David Beniamine} \and Guillaume Huard \and Bruno
 Raffin}
 \institute[MOAIS]{
-    \includegraphics[width=.25\textwidth]{img/logoUGA.jpg}
+    \includegraphics[width=.32\textwidth]{img/logoUJF.jpg}
     \qquad
     \qquad
     \includegraphics[width=.15\textwidth]{img/LIG_coul.jpg}
     \\
+    \hspace{50pt}
     \includegraphics[width=.22\textwidth]{img/inria.jpg}
+    \qquad
     \includegraphics[width=.4\textwidth]{img/moais.png}
 }
 %=============================================================================
@@ -122,19 +127,20 @@ Raffin}
     \end{itemize}
     \pause
     \begin{exampleblock}{Question}
-        How to optimize memory usage ?
+        How to analyze and optimize memory usage ?
     \end{exampleblock}
 \end{frame}
 
-\begin{frame}{Generic tools}
+\begin{frame}{Analysis tools}
     \begin{itemize}
+        \item Performance counters~\cite{Treibig10LIKWID} 
         \item Vtunes~\cite{Reinders05VTune}
         \item HPCTOOLKIT~\cite{Adhianto10HPCTOOLKIT}
         \item \ldots
     \end{itemize}
     \pause
-    \begin{alertblock}{Limit}
-        Focus on CPU
+    \begin{alertblock}{Limits}
+            Do not explain memory issues
     \end{alertblock}
 \end{frame}
 \begin{frame}{Memory oriented tools}
@@ -145,7 +151,7 @@ Raffin}
                 \item  Adaptive~\cite{Diener13CommunicationBased,Levinthal2009}
                     \begin{itemize}
                         \item Collect and use data online
-                        \item \alert{Cannot change memory pattern}
+                        \alertitem Cannot change memory pattern
                     \end{itemize}
             \end{itemize}
         \item Existing memory
@@ -185,8 +191,8 @@ Raffin}
             \begin{itemize}
                 \item Structure size
                 \item Number of read/write per structure
-                \item \alert{Accesses distribution by on each structure}
-                \item \alert{First touch distribution by on each structure}
+                \alertitem Accesses distribution by on each structure
+                \alertitem First touch distribution by on each structure
             \end{itemize}
         \item Easy to use interface with explanations for new users
     \end{itemize}
@@ -215,13 +221,13 @@ Raffin}
 \end{frame}
 
 \begin{frame}{What to do now ?}
-    \begin{block}{What is happening}
+    \begin{exampleblock}{What is happening ?}
         \begin{itemize}
             \item Access to \texttt{kb1} using values from \texttt{kb2}
             \item Values of \texttt{kb2} follows a Gaussian distribution
             \item Dynamic (OpenMp) thread scheduling
         \end{itemize}
-    \end{block}
+    \end{exampleblock}
     \pause
     \begin{alertblock}{How to fix this pattern}
         \begin{itemize}
@@ -287,24 +293,24 @@ Raffin}
         \item Accesses distribution
         \item Thread Sharing
         \item CPU Location
-        \item \alert{Temporal evolution}
-        \item \alert{Superset of the pages}
+        \alertitem Temporal evolution
+        \alertitem Superset of the pages
         \item Detail at the byte granularity
         \item Reasonable overhead
-        \item \alert{Portability}
+        \alertitem Portability
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Main principles}
     \begin{itemize}[<+->]
-        \item \alert{Page fault interception}
+        \alertitem Page fault interception
         \item False page fault (inspired by~\cite{Diener12Using})
         \item Linux kernel module
         \item Temporary flush data to disc
     \end{itemize}
 \end{frame}
 
-\subsubsection*{Overhead}
+\subsubsection*{Evaluation}
 
 \begin{frame}{Overhead on NPB}
     \begin{figure}[]
@@ -328,8 +334,9 @@ Raffin}
 \begin{frame}{Design}
     \begin{itemize}
         \item Based on Ocelotl~\cite{Dosimont14Trace}
-        \item Aggregate data
-        \item By thread visualization
+        \item Aggregate data to identify anomalies
+        \item Cartography view of the memory accesses
+        \item global / by thread visualization
     \end{itemize}
 \end{frame}
 
@@ -347,7 +354,7 @@ Raffin}
         How can we understand an applications memory behavior ?
     \end{exampleblock}
     \pause
-    \begin{block}{Tabarnac\cite{Beniamine15TABARNAC}}
+    \begin{block}{Tabarnac (joint work UFRGS / UJF, accepted at VPA'15)}
         \begin{itemize}
             \item Global view
             \item NUMA oriented
